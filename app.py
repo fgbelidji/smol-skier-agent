@@ -144,7 +144,8 @@ def build_ui():
             primary_hue=gr.themes.colors.blue,
             secondary_hue=gr.themes.colors.blue), css=custom_css
         ) as demo:
-        gr.Markdown("<center><h1>Ski Touring Agent Planner</h1></center>", )
+        gr.Markdown("<center><h1>Alpine Agent</h1></center>", )
+        gr.Markdown("<center>Plan your next ski touring trip with AI agents!</center>", )
         
         gr.Image(value="./data/skitourai.jpeg", height=300, width=300)
         with gr.Accordion("About the App❓", open=False):
