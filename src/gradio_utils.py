@@ -24,7 +24,8 @@ def create_map_from_markers(dataframe: pd.DataFrame) -> Map:
     Returns:
         Map: Folium map with markers.
     """
-   
+    dataframe["Latitude"] = dataframe["Latitude"].astype(float, errors='raise')
+    dataframe["Longitude"] = dataframe["Longitude"].astype(float, errors='raise')
     f_map = Map(
         location=[dataframe["Latitude"].mean(), dataframe["Longitude"].mean()],
         zoom_start=10,
