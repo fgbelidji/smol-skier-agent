@@ -1,6 +1,7 @@
 gradio-folium==0.0.7
-smolagents==1.2.2
+smolagents==1.3.0
 openai==1.59.7
 googlemaps==4.10.0
+litellm
 transformers
 meteofrance-api
