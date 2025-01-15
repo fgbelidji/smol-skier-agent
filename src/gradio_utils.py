@@ -53,8 +53,8 @@ def create_map_from_markers(dataframe: pd.DataFrame) -> Map:
     
     Fullscreen(position='topright', title='Expand me', title_cancel='Exit me', force_separate_button=True).add_to(f_map)
 
-    bounds = [[float(row["Latitude"]), float(row["Longitude"])] for _, row in dataframe.iterrows()]
-    f_map.fit_bounds(bounds, padding=(100, 100))
+    #bounds = [[float(row["Latitude"]), float(row["Longitude"])] for _, row in dataframe.iterrows()]
+    #f_map.fit_bounds(bounds, padding=(100, 100))
     return f_map
 
 
@@ -70,7 +70,6 @@ def update_map_on_selection(row: pd.Series, df_routes: gr.State) -> Map:
 
     f_map = Map(
         location=[row["Latitude"][0], row["Longitude"][0]],
-        zoom_start=10,
         tiles=TileLayer(
             tiles=MAP_URL,
             attr="Google",
@@ -130,10 +129,8 @@ def stream_to_gradio(
         final_message = final_answer.get("message")
         itineraries = final_answer.get("itineraries")
         if itineraries:
-            print("HEEERE")
             df_routes = pd.DataFrame(itineraries)
             df_routes.columns = ["id", "Name", "Latitude", "Longitude", "Route Link"]
-            print(df_routes)
             
     else:
         final_message = final_answer

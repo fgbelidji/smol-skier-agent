@@ -71,7 +71,7 @@ def init_default_agent(llm_engine):
             tools = get_tools(llm_engine),
             model = llm_engine,
             additional_authorized_imports=["pandas"],
-            max_steps=20,
+            max_steps=10,
     )
     
 # Initialize the default agent prompt
@@ -101,7 +101,7 @@ def initialize_new_agent(engine_type, api_key):
             tools = tools,
             model = llm_engine,
             additional_authorized_imports=["pandas"],
-            max_steps=20,
+            max_steps=10,
     )
         return skier_agent, [], gr.Chatbot([], label="Agent Thoughts", type="messages")
     except ValueError as e:
@@ -126,14 +126,26 @@ else:
 
 # Gradio UI
 def build_ui():
+    
+    custom_css = """
+    .custom-textbox {
+        border: 2px solid #1E90FF; /* DodgerBlue border */
+        border-radius: 10px;
+        padding: 10px;
+        background-color: #b4e2f0; /* Light blue background */
+        font-size: 16px; /* Larger font size */
+        color: #1E90FF; /* Blue text color */
+    }
+"""  
+
     with gr.Blocks(
         theme=gr.themes.Soft(
             primary_hue=gr.themes.colors.blue,
-            secondary_hue=gr.themes.colors.blue)
+            secondary_hue=gr.themes.colors.blue), css=custom_css
         ) as demo:
-        gr.Markdown("<center><h1>Ski Touring Agent Planner</h1></center>")
+        gr.Markdown("<center><h1>Ski Touring Agent Planner</h1></center>", )
         
-        gr.Image(value="./data/skitourai.jpeg", height=400, width=400)
+        gr.Image(value="./data/skitourai.jpeg", height=300, width=300)
         with gr.Accordion("About the App❓", open=False):
             gr.Markdown("""
  **🇬🇧 English Version**
@@ -165,6 +177,7 @@ Il est conçu spécifiquement pour aider à planifier des itinéraires de ski de
 
 Profitez de vos aventures en ski de randonnée en France, mais vérifiez toujours les sources officielles pour votre sécurité !
 """, container=True)
+        
 
         
         skier_agent = gr.State(lambda: init_default_agent(default_engine))
@@ -195,9 +208,14 @@ Profitez de vos aventures en ski de randonnée en France, mais vérifiez toujour
                 warning = gr.Warning("The agent can take few seconds to minutes to respond.", visible=True)
                 text_output = gr.Markdown(value=FINAL_MESSAGE_HEADER, container=True)
                 warning = gr.Markdown("⚠️ The agent can take few seconds to minutes to respond.", container=True)
-                text_input = gr.Textbox(lines=1, label="Chat Message", submit_btn=True)
-                gr.Examples(["Can you provide an itinerary near Grenoble?"], text_input)
-             
+                text_input = gr.Textbox(lines=1, label="Chat Message", submit_btn=True, elem_classes=["custom-textbox"])
+                with gr.Accordion("🇬🇧 English examples"):
+                    gr.Examples(["Can you suggest a ski touring itinerary, near Chamonix, of moderate difficulty, with good weather and safe avalanche conditions? ", 
+                                 "What are current weather and avalanche conditions in the Vanoise range?"], text_input)
+                with gr.Accordion("🇫🇷 Exemples en français", open=False):
+                    gr.Examples(["Poux-tu suggérer un itinéraire de ski de randonnée, près de Chamonix, d'une difficulté modérée, avec de bonnes conditions météorologiques et un risque avalanche peu élevé?", 
+                                 "Quelles sont les conditions météorologiques et le risque avalanche dans le massif de la Vanoise ?"], text_input)
+       
             with gr.Column():
                 f_map = Folium(value=Map(
                     location=[45.9237, 6.8694],
