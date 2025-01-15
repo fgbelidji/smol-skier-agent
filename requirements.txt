@@ -4,3 +4,4 @@ openai==1.59.7
 googlemaps==4.10.0
 transformers
 meteofrance-api
+soundfile
