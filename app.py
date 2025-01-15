@@ -18,7 +18,8 @@ from src.tools import (RefugeTool,
                        MountainRangesTool,
                       ForecastTool,
                       GetRoutesTool,
-                      DescribeRouteTool)
+                      DescribeRouteTool, 
+                      RecentOutingsTool)
 from folium import Map, TileLayer, Marker, Icon
 from dotenv import load_dotenv
 
@@ -51,7 +52,6 @@ with open("data/skitour2mf_lookup.json", "r") as f:
     skitour2mf_lookup = json.load(f)
 
 def get_tools(llm_engine):
-    refuge_tool = RefugeTool()
     mountain_ranges_tool = MountainRangesTool(summit_clusters)
     forecast_tool = ForecastTool(
         llm_engine=llm_engine, 
@@ -63,7 +63,8 @@ def get_tools(llm_engine):
         skitour2meteofrance=skitour2mf_lookup, 
         llm_engine=llm_engine
         )
-    return [mountain_ranges_tool, forecast_tool, get_routes_tool, description_route_tool]
+    recent_outings_tool = RecentOutingsTool()
+    return [mountain_ranges_tool, forecast_tool, get_routes_tool, description_route_tool, recent_outings_tool]
 
 # Initialize the default agent
 def init_default_agent(llm_engine):
