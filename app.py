@@ -126,7 +126,11 @@ else:
 
 # Gradio UI
 def build_ui():
-    with gr.Blocks() as demo:
+    with gr.Blocks(
+        theme=gr.themes.Soft(
+            primary_hue=gr.themes.colors.yellow,
+            secondary_hue=gr.themes.colors.blue)
+        ) as demo:
         gr.Markdown("<center><h1>Ski Touring Agent Planner</h1></center>")
         
         gr.Image(value="./data/skitourai.jpeg", height=400, width=400)
