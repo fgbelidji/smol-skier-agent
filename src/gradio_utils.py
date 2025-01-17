@@ -3,7 +3,7 @@ import gradio as gr
 import numpy as np
 import pandas as pd
 from gradio_folium import Folium
-from smolagents.gradio_ui import pull_messages_from_step
+#from smolagents.gradio_ui import pull_messages_from_step
 from smolagents.types import handle_agent_output_types, AgentText
 from folium import Map, TileLayer, Marker, Icon, Popup
 from folium.plugins import Fullscreen
@@ -89,12 +89,38 @@ def update_map_on_selection(row: pd.Series, df_routes: gr.State) -> Map:
 
     return f_map
 
+def pull_messages_from_step(step_log: AgentStepLog, test_mode: bool = True):
+    """Extract ChatMessage objects from agent steps"""
+    if isinstance(step_log, ActionStep):
+        yield gr.ChatMessage(role="assistant", content=step_log.llm_output or "", metadata={"title": "🤔💭🔄"},)
+        if step_log.tool_calls is not None:
+            first_tool_call = step_log.tool_calls[0]
+            used_code = first_tool_call.name == "code interpreter"
+            content = first_tool_call.arguments
+            if used_code:
+                content = f"```py\n{content}\n```"
+            yield gr.ChatMessage(
+                role="assistant",
+                metadata={"title": "🤔💭🔄"},
+                content=str(content),
+            )
+        if step_log.observations is not None:
+            yield gr.ChatMessage(role="assistant", content=step_log.observations, metadata={"title": "🤔💭🔄"},)
+        if step_log.error is not None:
+            yield gr.ChatMessage(
+                role="assistant",
+                content=str(step_log.error),
+                metadata={"title": "💥 Error"},
+            )
+
 
 # Simplified interaction function
 def interact_with_agent(agent, prompt, messages, df_routes, additional_args):
     
     messages.append(gr.ChatMessage(role="user", content=prompt))
     yield (messages, df_routes, gr.Textbox(value=FINAL_MESSAGE_HEADER, container=True))
+    
+    #messages.append(gr.ChatMessage(role="assistant", content="", "title": "🤔💭🔄"))
 
     for msg, _df_routes, final_message in stream_to_gradio(
         agent,
