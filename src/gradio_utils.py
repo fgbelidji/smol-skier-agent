@@ -92,7 +92,6 @@ def update_map_on_selection(row: pd.Series, df_routes: gr.State) -> Map:
 
 def pull_messages_from_step(step_log, test_mode: bool = True):
     """Extract ChatMessage objects from agent steps"""
-    accumulated_thoughts = "" 
     if isinstance(step_log, ActionStep):
         yield (step_log.llm_output, "")
         if step_log.tool_calls is not None:
@@ -145,6 +144,7 @@ def stream_to_gradio(
     accumulated_thoughts = ""
     accumulated_errors = ""
     for step_log in agent.run(task, stream=True, reset=reset_agent_memory, **kwargs):
+        print(pull_messages_from_step(step_log, test_mode=test_mode))
         for (obs, error) in pull_messages_from_step(step_log, test_mode=test_mode):
             
             if len(obs)>0:
