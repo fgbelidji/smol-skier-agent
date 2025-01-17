@@ -106,7 +106,7 @@ def pull_messages_from_step(step_log, test_mode: bool = True):
         if step_log.observations is not None:
             yield (step_log.observations, "")
         if step_log.error is not None:
-            yield ("", step_log.error)
+            yield ("", str(step_log.error))
 
 
 # Simplified interaction function
