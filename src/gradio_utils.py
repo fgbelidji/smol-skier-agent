@@ -105,7 +105,7 @@ def pull_messages_from_step(step_log, test_mode: bool = True):
         if step_log.observations is not None:
             yield step_log.observations
         if step_log.error is not None:
-            yield f"####Error 💥💥:\n ```{str(step_log.error)}```"
+            yield f"###Error 💥💥:\n ```{str(step_log.error)}```"
 
 
 # Simplified interaction function
@@ -149,7 +149,7 @@ def stream_to_gradio(
             
         
             accumulated_thoughts += f"{agent_thought}\n\n"
-            message = gr.ChatMessage(role="assistant", metadata={"title": "🤔💭🔄"}, content=str( accumulated_thoughts))
+            message = gr.ChatMessage(role="assistant", metadata={"title": "🤔💭🔄"}, content=str(accumulated_thoughts))
             yield (message, df_routes,  gr.Markdown(value=FINAL_MESSAGE_HEADER , container=True))
 
     final_answer = step_log  # Last log is the run's final_answer
