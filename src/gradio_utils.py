@@ -114,7 +114,7 @@ def interact_with_agent(agent, prompt, messages, df_routes, additional_args):
     messages.append(gr.ChatMessage(role="user", content=prompt))
     yield (messages, df_routes, gr.Textbox(value=FINAL_MESSAGE_HEADER, container=True))
     
-    messages.append(gr.ChatMessage(role="assistant", content="", "title": "🤔💭🔄"))
+    messages.append(gr.ChatMessage(role="assistant", content="",  metadata={"title":"🤔💭🔄"},))
     yield (messages, df_routes, gr.Textbox(value=FINAL_MESSAGE_HEADER, container=True))
 
     for msg, _df_routes, final_message in stream_to_gradio(
