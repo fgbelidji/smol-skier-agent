@@ -92,27 +92,21 @@ def update_map_on_selection(row: pd.Series, df_routes: gr.State) -> Map:
 
 def pull_messages_from_step(step_log, test_mode: bool = True):
     """Extract ChatMessage objects from agent steps"""
+    accumulated_thoughts = "" 
     if isinstance(step_log, ActionStep):
-        yield gr.ChatMessage(role="assistant", content=step_log.llm_output or "", metadata={"title": "🤔💭🔄"},)
+        yield (step_log.llm_output, "")
         if step_log.tool_calls is not None:
             first_tool_call = step_log.tool_calls[0]
             used_code = first_tool_call.name == "code interpreter"
             content = first_tool_call.arguments
             if used_code:
                 content = f"```py\n{content}\n```"
-            yield gr.ChatMessage(
-                role="assistant",
-                metadata={"title": "🤔💭🔄"},
-                content=str(content),
-            )
+            yield str(content)
+        
         if step_log.observations is not None:
-            yield gr.ChatMessage(role="assistant", content=step_log.observations, metadata={"title": "🤔💭🔄"},)
+            yield (step_log.observations, "")
         if step_log.error is not None:
-            yield gr.ChatMessage(
-                role="assistant",
-                content=str(step_log.error),
-                metadata={"title": "💥 Error"},
-            )
+            yield ("", step_log.error)
 
 
 # Simplified interaction function
@@ -130,7 +124,10 @@ def interact_with_agent(agent, prompt, messages, df_routes, additional_args):
         reset_agent_memory=True,
         additional_args=additional_args,
     ):
-        messages.append(msg)
+        if messages.metadata.get("title") == "Error 💥" or messages.metadata.get("title") == "🤔💭🔄" :
+            messages[-1] = msg
+        else:
+            messages.append(msg)
         yield (messages, _df_routes, final_message)
 
     yield (messages, _df_routes, final_message)
@@ -145,9 +142,18 @@ def stream_to_gradio(
     **kwargs,
 ):
     """Runs an agent with the given task and streams the messages from the agent as gradio ChatMessages."""
-
+    accumulated_thoughts = ""
+    accumulated_errors = ""
     for step_log in agent.run(task, stream=True, reset=reset_agent_memory, **kwargs):
-        for message in pull_messages_from_step(step_log, test_mode=test_mode):
+        for (obs, error) in pull_messages_from_step(step_log, test_mode=test_mode):
+            
+            if len(obs)>0:
+                accumulated_thoughts += f"{obs}\n\n"
+                message = gr.ChatMessage(role="assistant", metadata={"title": "🤔💭🔄"}, content=str(obs))
+            
+            if len(error)>0:
+                accumulated_errors += f"{error}\n\n" 
+                message = gr.ChatMessage(role="assistant", metadata={"title": "Error 💥"}, content=str(obs))   
             yield (message, df_routes,  gr.Markdown(value=FINAL_MESSAGE_HEADER , container=True))
 
     final_answer = step_log  # Last log is the run's final_answer
