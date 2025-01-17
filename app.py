@@ -20,6 +20,7 @@ from src.tools import (RefugeTool,
                       GetRoutesTool,
                       DescribeRouteTool, 
                       RecentOutingsTool)
+from src.feedback import get_feedback_interface
 from folium import Map, TileLayer, Marker, Icon
 from dotenv import load_dotenv
 
@@ -183,56 +184,57 @@ Profitez de vos aventures en ski de randonnée en France, mais vérifiez toujour
 
         
         skier_agent = gr.State(lambda: init_default_agent(default_engine))
-        with gr.Row():
-            with gr.Column():
-                language = gr.Radio(["English", "French"], value="French", label="Language")
-                skier_agent_prompt = gr.State(init_default_agent_prompt)
-                language_button = gr.Button("Update language")
-                model_type = gr.Dropdown(choices = ["Qwen/Qwen2.5-Coder-32B-Instruct", "meta-llama/Llama-3.3-70B-Instruct", "openai/gpt-4o", ], 
-                                         value="Qwen/Qwen2.5-Coder-32B-Instruct",
-                                         label="Model Type", 
-                                         info="If you choose openai/gpt-4o, you need to provide an API key.", 
-                                         interactive=True
-                                         )
-                api_key_textbox = gr.Textbox(label="API Key", placeholder="Enter your API key", type="password", visible=False)
-              
-        
-                model_type.change(
-                    lambda x: toggle_visibility(True) if x =='openai/gpt-4o' else toggle_visibility(False), 
-                    [model_type], 
-                    [api_key_textbox]
-                    )
-                update_engine = gr.Button("Update LLM Engine")
+        with gr.Tab("🤖"):
+            with gr.Row():
+                with gr.Column():
+                    language = gr.Radio(["English", "French"], value="French", label="Language")
+                    skier_agent_prompt = gr.State(init_default_agent_prompt)
+                    language_button = gr.Button("Update language")
+                    model_type = gr.Dropdown(choices = ["Qwen/Qwen2.5-Coder-32B-Instruct", "meta-llama/Llama-3.3-70B-Instruct", "openai/gpt-4o", ], 
+                                            value="Qwen/Qwen2.5-Coder-32B-Instruct",
+                                            label="Model Type", 
+                                            info="If you choose openai/gpt-4o, you need to provide an API key.", 
+                                            interactive=True
+                                            )
+                    api_key_textbox = gr.Textbox(label="API Key", placeholder="Enter your API key", type="password", visible=False)
                 
-              
-                stored_message = gr.State([])
-                chatbot = gr.Chatbot(label="Agent Thoughts", type="messages")
-                warning = gr.Warning("The agent can take few seconds to minutes to respond.", visible=True)
-                text_output = gr.Markdown(value=FINAL_MESSAGE_HEADER, container=True)
-                warning = gr.Markdown("⚠️ The agent can take few seconds to minutes to respond.", container=True)
-                text_input = gr.Textbox(lines=1, label="Chat Message", submit_btn=True, elem_classes=["custom-textbox"])
-                with gr.Accordion("🇬🇧 English examples"):
-                    gr.Examples(["Can you suggest a ski touring itinerary, near Chamonix, of moderate difficulty, with good weather and safe avalanche conditions? ", 
-                                 "What are current weather and avalanche conditions in the Vanoise range?"], text_input)
-                with gr.Accordion("🇫🇷 Exemples en français", open=False):
-                    gr.Examples(["Poux-tu suggérer un itinéraire de ski de randonnée, près de Chamonix, d'une difficulté modérée, avec de bonnes conditions météorologiques et un risque avalanche peu élevé?", 
-                                 "Quelles sont les conditions météorologiques et le risque avalanche dans le massif de la Vanoise ?"], text_input)
-       
-            with gr.Column():
-                f_map = Folium(value=Map(
-                    location=[45.9237, 6.8694],
-                    zoom_start=10,
-                    tiles= TileLayer(
-                                tiles=MAP_URL,
-                                attr="Google",
-                                name="Google Maps",
-                                overlay=True,
-                                control=True )
-                            )
-                )
-                               
-                df_routes = gr.State(pd.DataFrame(df_sample_routes))
-                data = gr.DataFrame(value=df_routes.value[["Name", "Route Link"]], datatype="markdown", interactive=False)
+            
+                    model_type.change(
+                        lambda x: toggle_visibility(True) if x =='openai/gpt-4o' else toggle_visibility(False), 
+                        [model_type], 
+                        [api_key_textbox]
+                        )
+                    update_engine = gr.Button("Update LLM Engine")
+                    
+                
+                    stored_message = gr.State([])
+                    chatbot = gr.Chatbot(label="Agent Thoughts", type="messages")
+                    warning = gr.Warning("The agent can take few seconds to minutes to respond.", visible=True)
+                    text_output = gr.Markdown(value=FINAL_MESSAGE_HEADER, container=True)
+                    warning = gr.Markdown("⚠️ The agent can take few seconds to minutes to respond.", container=True)
+                    text_input = gr.Textbox(lines=1, label="Chat Message", submit_btn=True, elem_classes=["custom-textbox"])
+                    with gr.Accordion("🇬🇧 English examples"):
+                        gr.Examples(["Can you suggest a ski touring itinerary, near Chamonix, of moderate difficulty, with good weather and safe avalanche conditions? ", 
+                                    "What are current weather and avalanche conditions in the Vanoise range?"], text_input)
+                    with gr.Accordion("🇫🇷 Exemples en français", open=False):
+                        gr.Examples(["Poux-tu suggérer un itinéraire de ski de randonnée, près de Chamonix, d'une difficulté modérée, avec de bonnes conditions météorologiques et un risque avalanche peu élevé?", 
+                                    "Quelles sont les conditions météorologiques et le risque avalanche dans le massif de la Vanoise ?"], text_input)
+        
+                with gr.Column():
+                    f_map = Folium(value=Map(
+                        location=[45.9237, 6.8694],
+                        zoom_start=10,
+                        tiles= TileLayer(
+                                    tiles=MAP_URL,
+                                    attr="Google",
+                                    name="Google Maps",
+                                    overlay=True,
+                                    control=True )
+                                )
+                    )
+                                
+                    df_routes = gr.State(pd.DataFrame(df_sample_routes))
+                    data = gr.DataFrame(value=df_routes.value[["Name", "Route Link"]], datatype="markdown", interactive=False)
         
                 language_button.click(lambda s: {"specific_agent_role_prompt": SKI_TOURING_ASSISTANT_PROMPT.format(language=s)}, [language], [skier_agent_prompt])
                 update_engine.click(
@@ -248,6 +250,7 @@ Profitez de vos aventures en ski de randonnée en France, mais vérifiez toujour
                 data.select(
                     update_map_on_selection, [data, df_routes],[f_map]
                 )
+        get_feedback_interface()
 
     demo.launch()
 
