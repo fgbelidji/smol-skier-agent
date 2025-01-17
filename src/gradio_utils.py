@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 from gradio_folium import Folium
 #from smolagents.gradio_ui import pull_messages_from_step
-from smolagents.types import handle_agent_output_types, AgentText
+from smolagents.types import handle_agent_output_types, AgentText, AgentStepLog, ActionStep
 from folium import Map, TileLayer, Marker, Icon, Popup
-from folium.plugins import Fullscreen
+from folium.plugins import Fullscreen   
 
 FINAL_MESSAGE_HEADER = "**Final answer/ Réponse finale** \n 🤖⛷️💭"
 
