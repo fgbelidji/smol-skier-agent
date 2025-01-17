@@ -124,7 +124,7 @@ def interact_with_agent(agent, prompt, messages, df_routes, additional_args):
         reset_agent_memory=True,
         additional_args=additional_args,
     ):
-        if messages.metadata.get("title") == "Error 💥" or messages.metadata.get("title") == "🤔💭🔄" :
+        if messages.metadata.get("title", "") == "Error 💥" or messages.metadata.get("title", "") == "🤔💭🔄" :
             messages[-1] = msg
         else:
             messages.append(msg)
