@@ -5,7 +5,7 @@ import pandas as pd
 from gradio_folium import Folium
 #from smolagents.gradio_ui import pull_messages_from_step
 from smolagents.types import handle_agent_output_types, AgentText
-from smolagents import AgentStepLog, ActionStep
+from smolagents.agents import ActionStep
 from folium import Map, TileLayer, Marker, Icon, Popup
 from folium.plugins import Fullscreen   
 
@@ -90,7 +90,7 @@ def update_map_on_selection(row: pd.Series, df_routes: gr.State) -> Map:
 
     return f_map
 
-def pull_messages_from_step(step_log: AgentStepLog, test_mode: bool = True):
+def pull_messages_from_step(step_log, test_mode: bool = True):
     """Extract ChatMessage objects from agent steps"""
     if isinstance(step_log, ActionStep):
         yield gr.ChatMessage(role="assistant", content=step_log.llm_output or "", metadata={"title": "🤔💭🔄"},)
