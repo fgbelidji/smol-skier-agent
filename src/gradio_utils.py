@@ -101,7 +101,7 @@ def pull_messages_from_step(step_log, test_mode: bool = True):
             content = first_tool_call.arguments
             if used_code:
                 content = f"```py\n{content}\n```"
-            yield str(content)
+            yield (str(content), "")
         
         if step_log.observations is not None:
             yield (step_log.observations, "")
