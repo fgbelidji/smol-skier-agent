@@ -93,19 +93,19 @@ def update_map_on_selection(row: pd.Series, df_routes: gr.State) -> Map:
 def pull_messages_from_step(step_log, test_mode: bool = True):
     """Extract ChatMessage objects from agent steps"""
     if isinstance(step_log, ActionStep):
-        yield (step_log.llm_output, "")
+        yield step_log.llm_output
         if step_log.tool_calls is not None:
             first_tool_call = step_log.tool_calls[0]
             used_code = first_tool_call.name == "code interpreter"
             content = first_tool_call.arguments
             if used_code:
                 content = f"```py\n{content}\n```"
-            yield (str(content), "")
+            yield str(content)
         
         if step_log.observations is not None:
-            yield (step_log.observations, "")
+            yield step_log.observations
         if step_log.error is not None:
-            yield ("", str(step_log.error))
+            yield f"Error 💥💥: {str(step_log.error)}"
 
 
 # Simplified interaction function
@@ -114,7 +114,8 @@ def interact_with_agent(agent, prompt, messages, df_routes, additional_args):
     messages.append(gr.ChatMessage(role="user", content=prompt))
     yield (messages, df_routes, gr.Textbox(value=FINAL_MESSAGE_HEADER, container=True))
     
-    #messages.append(gr.ChatMessage(role="assistant", content="", "title": "🤔💭🔄"))
+    messages.append(gr.ChatMessage(role="assistant", content="", "title": "🤔💭🔄"))
+    yield (messages, df_routes, gr.Textbox(value=FINAL_MESSAGE_HEADER, container=True))
 
     for msg, _df_routes, final_message in stream_to_gradio(
         agent,
@@ -123,7 +124,7 @@ def interact_with_agent(agent, prompt, messages, df_routes, additional_args):
         reset_agent_memory=True,
         additional_args=additional_args,
     ):
-        if msg.metadata.get("title", "") == "Error 💥" or msg.metadata.get("title", "") == "🤔💭🔄" :
+        if msg.metadata["title"] == "🤔💭🔄" :
             messages[-1] = msg
         else:
             messages.append(msg)
@@ -144,16 +145,11 @@ def stream_to_gradio(
     accumulated_thoughts = ""
     accumulated_errors = ""
     for step_log in agent.run(task, stream=True, reset=reset_agent_memory, **kwargs):
-        print(pull_messages_from_step(step_log, test_mode=test_mode))
-        for (obs, error) in pull_messages_from_step(step_log, test_mode=test_mode):
+        for agent_thought in pull_messages_from_step(step_log, test_mode=test_mode):
             
-            if len(obs)>0:
-                accumulated_thoughts += f"{obs}\n\n"
-                message = gr.ChatMessage(role="assistant", metadata={"title": "🤔💭🔄"}, content=str(obs))
-            
-            if len(error)>0:
-                accumulated_errors += f"{error}\n\n" 
-                message = gr.ChatMessage(role="assistant", metadata={"title": "Error 💥"}, content=str(obs))   
+        
+            accumulated_thoughts += f"{agent_thought}\n\n"
+            message = gr.ChatMessage(role="assistant", metadata={"title": "🤔💭🔄"}, content=str( accumulated_thoughts))
             yield (message, df_routes,  gr.Markdown(value=FINAL_MESSAGE_HEADER , container=True))
 
     final_answer = step_log  # Last log is the run's final_answer
