@@ -84,6 +84,9 @@ def create_llm_engine(type_engine: str, api_key: str = None):
     if type_engine == "openai/gpt-4o" and api_key:
         llm_engine = LiteLLMModel(model_id="openai/gpt-4o", api_key=api_key)
         return llm_engine
+    elif type_engine == "openai/o1" and api_key:
+        llm_engine = LiteLLMModel(model_id="openai/o1", api_key=api_key)
+        return llm_engine
     elif type_engine == "openai/gpt-4o" and not api_key:
         raise ValueError("You need to provide an API key to use the the model engine.")
     elif type_engine == "Qwen/Qwen2.5-Coder-32B-Instruct":
@@ -121,7 +124,7 @@ df_sample_routes = pd.DataFrame(sample_data)
 
 # Default engine
 if os.environ.get("OPENAI_API_KEY"):
-    default_engine = create_llm_engine("openai/gpt-4o", os.environ.get("OPENAI_API_KEY"))
+    default_engine = create_llm_engine("openai/o1", os.environ.get("OPENAI_API_KEY"))
 else:
     default_engine = create_llm_engine("Qwen/Qwen2.5-Coder-32B-Instruct")
 
